@@ -1,0 +1,70 @@
+---
+import '../styles/global.css';
+import { contact } from '../data/profile';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const path = Astro.url.pathname.replace(/\/?$/, '/');
+const links = [
+  { href: base, label: 'About' },
+  { href: `${base}experience/`, label: 'Experience' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="wordmark" href={base}>Motto Sereeyothin</a>
+        <nav aria-label="Main">
+          <ul>
+            {
+              links.map((l) => (
+                <li>
+                  <a href={l.href} aria-current={path === l.href ? 'page' : undefined}>
+                    {l.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li><a href={`${base}#contact`}>Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <span>© {new Date().getFullYear()} Weerapraj (Motto) Sereeyothin</span>
+        <span class="footer-links">
+          <a href={contact.resume} download="Weerapraj-Sereeyothin-Resume.pdf">Resume</a>
+          <a href={`mailto:${contact.email}`}>Email</a>
+          <a href={contact.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+          {contact.github && <a href={contact.github} target="_blank" rel="noopener">GitHub</a>}
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

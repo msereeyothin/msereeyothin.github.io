@@ -1,0 +1,141 @@
+---
+import Base from '../layouts/Base.astro';
+import { contact, experience } from '../data/profile';
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const latest = experience.slice(0, 3);
+---
+
+<Base
+  title="Motto Sereeyothin"
+  description="Weerapraj (Motto) Sereeyothin — software engineer and Northeastern University computer science graduate based in Boston."
+>
+  <section class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">Software Engineer · Boston, MA</p>
+      <h1>About Me</h1>
+      <p class="lede">
+        Hi, I’m Motto. I build web applications that improve companies.
+      </p>
+      <p class="hero-actions">
+        <a class="button" href={contact.resume} download="Weerapraj-Sereeyothin-Resume.pdf">Download resume</a>
+        <a class="button button-ghost" href="#contact">Get in touch</a>
+      </p>
+    </div>
+    <figure class="hero-figure">
+      <img
+        src={`${base}images/motto-with-cat.jpg`}
+        width="900"
+        height="1200"
+        alt="Me petting a cat"
+      />
+    </figure>
+  </section>
+
+  <section class="prose intro">
+    <p>
+      I studied Computer Science at Northeastern University in Boston (B.S., Class of 2026).
+      Before moving to the United States, I finished high school at International School Bangkok
+      in Thailand. Growing up between two very different places taught me to adapt quickly, communicate across
+      cultures, and pay attention to how technology affects the people who actually use it.
+    </p>
+    <p>
+      Most of my work has been on the front end of the web, mainly with React and
+      TypeScript, backed by Node.js and databases accessed through tools like
+      Prisma. Northeastern’s co-op program let me spend long stretches working full-time on real products. At
+      GhostLab, I designed an analytics dashboard that helps engineering professors follow student
+      progress. More recently, I was a software engineer co-op at Spill Center. On campus, I
+      contributed to Northeastern Electric Racing’s project management software for a team of
+      more than 200 members, and I improved the Student Government Association’s senate application and
+      nomination tools.
+    </p>
+    <p>
+      I like work where good engineering meets a clear human need. That could be a municipal website in Bangkok
+      that helps thousands of residents reach social services, or a scheduling tool that saves classmates an
+      afternoon of planning. I’m currently open to software developer roles in Boston, on-site, hybrid, or
+      remote. The <a href={`${base}experience/`}>Experience page</a> has the full timeline of my roles,
+      education, and skills.
+    </p>
+  </section>
+
+  <section class="beyond">
+    <h2>Outside of work</h2>
+    <div class="beyond-grid">
+      <div class="prose">
+        <p>Outside of work, I enjoy:</p>
+        <ul class="hobbies">
+          <li>Playing basketball</li>
+          <li>Playing the piano</li>
+          <li>Reading</li>
+          <li>Fostering cats</li>
+        </ul>
+      </div>
+      <div class="cat-photos">
+        <figure>
+          <img
+            src={`${base}images/foster-cat-tuxedo.jpg`}
+            width="900"
+            height="1200"
+            loading="lazy"
+            alt="A black-and-white tuxedo cat sitting upright on a wooden floor with its tail wrapped around its paws"
+          />
+          <figcaption>Our current foster. She's very cuddly</figcaption>
+        </figure>
+        <figure>
+          <img
+            src={`${base}images/foster-cat-calico.jpg`}
+            width="900"
+            height="1200"
+            loading="lazy"
+            alt="A calico cat lounging on a beige couch in the sun with one white paw stretched forward"
+          />
+          <figcaption>Recent foster cat who just found a home! We named her "Zempy"</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="recent">
+    <h2>Recently</h2>
+    <ul class="card-grid">
+      {
+        latest.map((e) => (
+          <li class="card">
+            <span class="card-org">{e.org}</span>
+            <span class="card-title">{e.title}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <p><a class="button" href={`${base}experience/`}>See full experience →</a></p>
+  </section>
+
+  <section id="contact" class="contact">
+    <h2>Contact</h2>
+    <p>The best way to reach me is by email or on LinkedIn.</p>
+    <ul class="contact-list">
+      <li>
+        <span class="contact-label">Resume</span>
+        <a href={contact.resume} download="Weerapraj-Sereeyothin-Resume.pdf">Download PDF</a>
+      </li>
+      <li>
+        <span class="contact-label">Email</span>
+        <a href={`mailto:${contact.email}`}>{contact.email}</a>
+      </li>
+      <li>
+        <span class="contact-label">LinkedIn</span>
+        <a href={contact.linkedin} target="_blank" rel="noopener">linkedin.com/in/msereeyothin</a>
+      </li>
+      {
+        contact.github && (
+          <li>
+            <span class="contact-label">GitHub</span>
+            <a href={contact.github} target="_blank" rel="noopener">
+              {contact.github.replace(/^https?:\/\//, '')}
+            </a>
+          </li>
+        )
+      }
+    </ul>
+  </section>
+</Base>

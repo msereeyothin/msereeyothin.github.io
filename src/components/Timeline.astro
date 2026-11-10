@@ -1,0 +1,187 @@
+---
+import type { Entry } from '../data/profile';
+import { fmt } from '../data/profile';
+
+interface Props {
+  entries: Entry[];
+}
+const { entries } = Astro.props;
+
+const short: Record<string, string> = {
+  'Student Government Association of Northeastern University': 'NU Student Government',
+  'Northeastern Electric Racing': 'NE Electric Racing',
+  'International School Bangkok': 'Intl. School Bangkok',
+};
+const rows = [...entries]
+  .sort((a, b) => a.start.localeCompare(b.start))
+  .map((e) => ({
+    kind: e.kind,
+    label: short[e.org] ?? e.org,
+    org: e.org,
+    title: e.title,
+    start: e.start,
+    end: e.end,
+    range: `${fmt(e.start)} – ${fmt(e.end)}`,
+  }));
+---
+
+<figure class="timeline">
+  <figcaption class="timeline-head">
+    <span class="timeline-title">Education and work, 2020–2026</span>
+    <span class="legend" aria-hidden="true">
+      <span class="legend-item"><span class="swatch swatch-education"></span>Education</span>
+      <span class="legend-item"><span class="swatch swatch-work"></span>Work</span>
+    </span>
+  </figcaption>
+  <div class="timeline-chart" data-rows={JSON.stringify(rows)}></div>
+  <div class="timeline-tip" role="status" hidden></div>
+</figure>
+
+<script>
+  import * as d3 from 'd3';
+
+  type Row = {
+    kind: 'work' | 'education';
+    label: string;
+    org: string;
+    title: string;
+    start: string;
+    end: string;
+    range: string;
+  };
+
+  const parse = d3.timeParse('%Y-%m');
+  // Bars run through the end of the end month.
+  const endOf = (ym: string) => d3.timeMonth.offset(parse(ym)!, 1);
+
+  function draw(root: HTMLElement) {
+    const host = root.querySelector<HTMLElement>('.timeline-chart')!;
+    const tip = root.querySelector<HTMLElement>('.timeline-tip')!;
+    const rows: Row[] = JSON.parse(host.dataset.rows!);
+
+    const width = host.clientWidth;
+    const narrow = width < 560;
+    const rowH = 34;
+    const barH = 14;
+    const margin = { top: 8, right: 16, bottom: 28, left: narrow ? 8 : 168 };
+    const labelInline = narrow; // on phones, labels sit above each bar
+    const rowStep = labelInline ? rowH + 16 : rowH;
+    const height = margin.top + margin.bottom + rows.length * rowStep;
+
+    host.replaceChildren();
+    const svg = d3
+      .select(host)
+      .append('svg')
+      .attr('viewBox', `0 0 ${width} ${height}`)
+      .attr('width', width)
+      .attr('height', height)
+      .attr('role', 'img')
+      .attr(
+        'aria-label',
+        'Timeline of education and work from 2020 to 2026: ' +
+          rows.map((r) => `${r.org}, ${r.title}, ${r.range}`).join('; ')
+      );
+
+    const x = d3
+      .scaleTime()
+      .domain([new Date(2020, 0, 1), new Date(2026, 11, 31)])
+      .range([margin.left, width - margin.right]);
+
+    const yTop = (i: number) => margin.top + i * rowStep + (labelInline ? 16 : 0);
+
+    // Recessive year grid
+    const years = d3.timeYear.range(new Date(2020, 0, 1), new Date(2027, 0, 2));
+    svg
+      .append('g')
+      .attr('class', 'grid')
+      .selectAll('line')
+      .data(years)
+      .join('line')
+      .attr('x1', (d) => x(d))
+      .attr('x2', (d) => x(d))
+      .attr('y1', margin.top)
+      .attr('y2', height - margin.bottom);
+
+    svg
+      .append('g')
+      .attr('class', 'axis')
+      .attr('transform', `translate(0,${height - margin.bottom})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(d3.timeYear.every(narrow ? 2 : 1))
+          .tickFormat((d) => d3.timeFormat(narrow ? "'%y" : '%Y')(d as Date))
+          .tickSize(0)
+          .tickPadding(10)
+      )
+      .call((g) => g.select('.domain').remove());
+
+    // Row labels
+    svg
+      .append('g')
+      .attr('class', 'row-labels')
+      .selectAll('text')
+      .data(rows)
+      .join('text')
+      .attr('x', labelInline ? margin.left : margin.left - 12)
+      .attr('y', (_, i) => (labelInline ? yTop(i) - 6 : yTop(i) + rowH / 2))
+      .attr('dy', labelInline ? 0 : '0.35em')
+      .attr('text-anchor', labelInline ? 'start' : 'end')
+      .text((d) => d.label);
+
+    const showTip = (event: PointerEvent | FocusEvent, d: Row) => {
+      tip.innerHTML = `<strong>${d.title}</strong><span>${d.org}</span><span class="tip-dates">${d.range}</span>`;
+      tip.hidden = false;
+      const box = root.getBoundingClientRect();
+      const target = (event.currentTarget as SVGElement).getBoundingClientRect();
+      const px = 'clientX' in event && event.clientX ? event.clientX : target.left + target.width / 2;
+      const tipW = tip.offsetWidth;
+      const left = Math.min(Math.max(px - box.left - tipW / 2, 0), box.width - tipW);
+      tip.style.left = `${left}px`;
+      tip.style.top = `${target.top - box.top - tip.offsetHeight - 10}px`;
+    };
+    const hideTip = () => (tip.hidden = true);
+
+    const bars = svg
+      .append('g')
+      .selectAll('g')
+      .data(rows)
+      .join('g')
+      .attr('class', (d) => `bar bar-${d.kind}`)
+      .attr('tabindex', 0)
+      .attr('aria-label', (d) => `${d.title}, ${d.org}, ${d.range}`)
+      .on('pointerenter pointermove', showTip)
+      .on('pointerleave', hideTip)
+      .on('focus', showTip)
+      .on('blur', hideTip);
+
+    // Invisible hit target taller than the mark
+    bars
+      .append('rect')
+      .attr('class', 'hit')
+      .attr('x', (d) => x(parse(d.start)!) - 4)
+      .attr('y', (_, i) => yTop(i))
+      .attr('width', (d) => Math.max(x(endOf(d.end)) - x(parse(d.start)!), 6) + 8)
+      .attr('height', rowH);
+
+    bars
+      .append('rect')
+      .attr('class', 'mark')
+      .attr('x', (d) => x(parse(d.start)!))
+      .attr('y', (_, i) => yTop(i) + (rowH - barH) / 2)
+      .attr('width', (d) => Math.max(x(endOf(d.end)) - x(parse(d.start)!), 6))
+      .attr('height', barH)
+      .attr('rx', 4);
+  }
+
+  document.querySelectorAll<HTMLElement>('.timeline').forEach((root) => {
+    const host = root.querySelector<HTMLElement>('.timeline-chart')!;
+    let last = 0;
+    new ResizeObserver(() => {
+      if (host.clientWidth !== last) {
+        last = host.clientWidth;
+        draw(root);
+      }
+    }).observe(host);
+  });
+</script>

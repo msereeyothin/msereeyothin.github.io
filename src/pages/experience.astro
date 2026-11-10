@@ -1,0 +1,114 @@
+---
+import Base from '../layouts/Base.astro';
+import Timeline from '../components/Timeline.astro';
+import { contact, experience, education, skills, fmt } from '../data/profile';
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+
+<Base
+  title="Experience · Motto Sereeyothin"
+  description="Work experience, education, projects and skills of Weerapraj (Motto) Sereeyothin."
+>
+  <header class="page-head">
+    <p class="eyebrow">Experience</p>
+    <h2 class="page-title">Work, education, and the things I’ve built</h2>
+    <p class="lede">
+      A closer look at where I’ve worked, what I studied, and the tools I reach for.
+    </p>
+    <p><a class="button" href={contact.resume} download="Weerapraj-Sereeyothin-Resume.pdf">Download resume (PDF)</a></p>
+  </header>
+
+  <section class="prose">
+    <p>
+      Most of my experience comes from Northeastern’s co-op program and from student organizations, which together
+      gave me a mix of full-time industry work and part-time campus projects. I started in the summer of 2023 as a
+      software development intern at ECARTSTUDIO in Bangkok. There I helped build a high-traffic
+      React and TypeScript web app for a Thai municipality, which taught me how much a clear interface matters when
+      thousands of residents depend on it to reach public services.
+    </p>
+    <p>
+      Back in Boston, I joined Northeastern Electric Racing as a software developer and worked on
+      the project management software the 200+ member team uses to coordinate building a race car. My first co-op,
+      at GhostLab, focused on data. I designed an interactive analytics dashboard that lets
+      engineering professors track student progress, spot trends early, and give targeted support. I then
+      helped the Student Government Association modernize its senate application and nomination
+      process, and spent the second half of 2025 as a software engineer co-op at Spill Center.
+    </p>
+    <p>
+      Across these roles, I’ve worked mostly on the front end and on the APIs that feed it, and I care about
+      shipping things that are fast, accessible, and easy for the next developer to pick up. The timeline below shows
+      how my education and work overlap. Hover over or tab to any bar for details.
+    </p>
+  </section>
+
+  <Timeline entries={[...experience, ...education]} />
+
+  <section class="split">
+    <div>
+      <h3>Experience</h3>
+      <ol class="entries">
+        {
+          experience.map((e) => (
+            <li class="entry">
+              <div class="entry-meta">
+                <span class="entry-dates">{fmt(e.start)} – {fmt(e.end)}</span>
+                <span class="entry-loc">{e.location}</span>
+              </div>
+              <div>
+                <h4>{e.title}</h4>
+                <p class="entry-org">{e.org}</p>
+                {e.summary && <p>{e.summary}</p>}
+                {e.skills && (
+                  <ul class="tags" aria-label="Skills">
+                    {e.skills.map((s) => <li>{s}</li>)}
+                  </ul>
+                )}
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <aside>
+      <h3>Education</h3>
+      <ul class="plain-list">
+        {
+          education.map((e) => (
+            <li>
+              <strong>{e.org}</strong>
+              <span>{e.title}</span>
+              <span class="entry-dates">{fmt(e.start)} – {fmt(e.end)}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h3>Project</h3>
+      <div class="project">
+        <strong>ScheduleNEU</strong>
+        <span class="entry-dates">Dec 2023 – Present</span>
+        <p>
+          A schedule-planning website for Northeastern students, built by parsing data from Northeastern’s class
+          catalog.
+        </p>
+        <a class="project-shot" href="https://www.scheduleneu.com/" target="_blank" rel="noopener">
+          <img
+            src={`${base}images/scheduleneu.jpg`}
+            width="1200"
+            height="633"
+            loading="lazy"
+            alt="ScheduleNEU homepage with the tagline “Simplify, Plan, Achieve” and a husky peeking over a calendar"
+          />
+        </a>
+        <a href="https://www.scheduleneu.com/" target="_blank" rel="noopener">Visit scheduleneu.com →</a>
+      </div>
+
+      <h3>Skills</h3>
+      <ul class="tags">
+        {skills.map((s) => <li>{s}</li>)}
+      </ul>
+    </aside>
+  </section>
+</Base>
